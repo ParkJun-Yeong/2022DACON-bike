@@ -3,4 +3,15 @@
 >> 2019-09-07 == 2019-09-06 으로 그냥 채워넣음
 >> 'days_of_week' Col 추가 (주말 == 1, 평일 == 0)
 
-2. 
+2. 연 / 월 / 일 구분 (코드공유에서 가져옴)
+
+3. Sunshine_rate와 Sunshine_sum은 유사할 듯 하여 선형회귀로 구해버림
+>> pearson correlation == 0.958
+
+4. month / sunshine_rate / sunshine_sum 을 이용하여 선형회귀를 통해
+precipitation을 구함
+
+>> 데이터가 너무 적어서 정확하지는 않은듯
+
+5. Gradient Boosting >> Random Forest
+
