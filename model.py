@@ -8,29 +8,47 @@ Argument
 - 
 """
 class LSTM(nn.Module):
-    def __init__(self, size, stack, dropout, ):
+    def __init__(self, size, hidden_size, num_layers, stack, dropout):
         super(LSTM, self).__init__()
         self.size = size
-        self.hidden_size = size
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
         self.stack = stack
-        self.module = nn.ModuleList([nn.LSTM(input_size=size, hidden_size=self.hidden_size,
-                                             batch_first=True, dropout=dropout) for _ in range(stack)])
-        self.fc = nn.Linear(in_features=size, out_features=1)
+        self.dropout = dropout
+        self.module = nn.ModuleList([nn.LSTM(input_size=self.size, hidden_size=self.hidden_size,
+                                             num_layers=self.num_layers[i], batch_first=True, dropout=self.dropout) for i in range(self.stack)])
+        self.fc = nn.Linear(in_features=self.size, out_features=1)
 
     def forward(self, x):
-        hn = 0
-        cn = 0
-        for i in range(self.stack):
-            output, (hn, cn) = self.module[i](x, (hn, cn))
+        # x (batch, 1, size) = (batch, 1, 16)
+        x = x.unsqueeze(1)
+
+        # Initial hn and cn are zero
+        # hn, cn (num_layers, batch, hidden_size)
+        x , (hn, cn) = self.module[0](x)
+
+        # (4, batch, 16) -> (12, batch, 16)
+        hn = torch.concat([hn, hn, hn], dim=0)
+        cn = torch.concat([cn, cn, cn], dim=0)
+        x, (hn, cn) = self.module[1](x, (hn, cn))
+
+        # (12, batch, 16) -> (24, batch, 16)
+        hn = torch.concat([hn, hn], dim=0)
+        cn = torch.concat([cn, cn], dim=0)
+        output, (hn, cn) = self.module[2](x, (hn, cn))
 
         y = self.fc(output)
+
+        # to scalar
+        y = y.squeeze(-1)
+        y = y.squeeze(-1)
 
         return y
 
 
 
 
-
-class GRU(nn.Module):
-    def __init__(self):
-        super(GRU, self)
+#
+# class GRU(nn.Module):
+#     def __init__(self):
+#         super(GRU, self)
