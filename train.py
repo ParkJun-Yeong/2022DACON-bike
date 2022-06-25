@@ -5,6 +5,7 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 # import torchsummary
 from torchinfo import summary
+import torch.nn.init as weight_init
 from ray import ray
 
 from datetime import datetime
@@ -53,7 +54,7 @@ def train_loop(dataloader, model, optimizer, epochs):
     writer.flush()
     writer.close()
 
-    saved_model_dir = './saved_model'
+    saved_model_dir = r'./saved_model'
     now = datetime.now()
     torch.save(model, os.path.join(saved_model_dir, "saved_model" + now.strftime("%Y-%m-%d-%H-%M") + ".pt"))
 
@@ -62,7 +63,7 @@ def train_loop(dataloader, model, optimizer, epochs):
 
 
 if __name__ == "__main__":
-    epochs = 1000
+    epochs = 3000
     size = 15
     hidden_size = size
     num_layers = [4, 12, 24]
@@ -85,6 +86,11 @@ if __name__ == "__main__":
         model = model_list.LSTM()
 
     model.to(device)
+
+    dict = {}
+    for name, param in model.named_parameters():
+        weight_init.normal(param)
+        dict[name] = param
 
     # torchsummary로 RNN 계열 모델을 요약하려고 하면 입력값사이즈 인자를 튜플로 인식해서 에러 발생
     # print(torchsummary.summary(model, (1, 16)))
