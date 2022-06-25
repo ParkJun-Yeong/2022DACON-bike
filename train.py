@@ -30,18 +30,20 @@ def train_loop(dataloader, model, optimizer, epochs):
 
     print("========== Train..... ==========")
     iter = 0
+    loss_fn = torch.nn.MSELoss()
+
     for epoch in range(epochs):
         loss_history = []
         for i, (X, tgt) in tqdm(enumerate(dataloader), desc="Train....."):
-            tgt = torch.tensor(tgt).to(device)
-            pred = model(X.to(device))
-            loss = nmse(tgt, pred)
+            tgt = torch.tensor(tgt).to(device, dtype=torch.float32)
+            pred = model(X.to(device)).to(device, dtype=torch.float32)
+            loss = loss_fn(pred, tgt)
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-            loss_history.append(loss)
+            loss_history.append(loss.item())
             # print("====Epoch [", epoch, "][", i, "] Loss: ", loss)
             writer.add_scalar("Loss per iter/train", loss, iter)
             iter += 1
@@ -66,22 +68,24 @@ if __name__ == "__main__":
     epochs = 3000
     size = 15
     hidden_size = size
-    num_layers = [4, 12, 24]
-    stack = 3
-    dropout = 0.3
+    # num_layers = [4, 12, 24]
+    num_layers = [1]
+    # stack = 3
+    stack = 1
+    dropout = 0.1
     # batch_size = 384
     batch_size = 32
-    learning_rate = 0.5
+    learning_rate = 10
     # weight_decay = 1e-5
     # weight_decay = 2e-5
 
     # Change the model type for experiment
-    model_type = 'LSTM'
+    model_type = 'GRU'
 
     if model_type == 'LSTM':
         model = model_list.LSTM(size, hidden_size, num_layers, stack, dropout)
     elif model_type == 'GRU':
-        model = model_list.GRU()
+        model = model_list.GRU(size, hidden_size, num_layers, stack, dropout)
     elif model_type == 'Attention':
         model = model_list.LSTM()
 
