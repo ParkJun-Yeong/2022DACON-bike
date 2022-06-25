@@ -2,6 +2,11 @@ import torch
 from torch.utils.data import Dataset
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning) # FutureWarning 제거
+pd.set_option('mode.chained_assignment', None)  # SettingWithCopyWarning 경고 무시
 
 
 class BikeDataset(Dataset):
@@ -16,13 +21,25 @@ class BikeDataset(Dataset):
         self.train_path = './dataset/train.csv'
         self.test_path = './dataset/test.csv'
 
-        self.train_df = pd.read_csv(self.train_path)
-        self.data_columns = self.train_df.columns.difference(['rental', 'date'])
-        self.train_dataset = self.train_df[self.data_columns].values.tolist()
-        self.train_label = self.train_df['rental'].values.tolist()
+        # Train
+        df = pd.read_csv(self.train_path).drop(["date", "Unnamed: 0"], axis=1)
+        data_columns = df.columns.difference(['rental'])
 
-        self.test_df = pd.read_csv(self.test_path)
-        self.test_dataset = self.test_df[self.data_columns].values.tolist()
+        self.train_df = df[data_columns]
+        self.label_df = df['rental']
+
+        # preprocess (나중에 preprocess.py로 옮기기)
+        scaler = MinMaxScaler()
+        self.train_df.iloc[:, :-1] = scaler.fit_transform(self.train_df.iloc[:, :-1])
+        # self.train_df.iloc[:, :-1] = scaler.transform(self.train_df.iloc[:, :-1])
+
+        self.train_dataset = self.train_df[data_columns].values.tolist()
+        self.train_label = self.label_df.values.tolist()
+
+        # Test
+        self.test_df = pd.read_csv(self.test_path).drop(["date", "Unnamed: 0"], axis=1)
+        self.test_df.iloc[:, :-1] = scaler.transform(self.test_df.iloc[:, :-1])
+        self.test_dataset = df[data_columns].values.tolist()
 
     def __len__(self):
         if self.train_flag:

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/2022DACON_bike.iml" filepath="$PROJECT_DIR$/.idea/2022DACON_bike.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/2022DACON_bike_desktop.iml" filepath="$PROJECT_DIR$/.idea/2022DACON_bike_desktop.iml" />
     </modules>
   </component>
 </project>
