@@ -86,3 +86,24 @@ class GRU(nn.Module):
         y = y.squeeze(-1)
 
         return y
+
+
+class LinearModel(nn.Module):
+    def __init__(self):
+        super(LinearModel, self).__init__()
+        # self.fc1 = nn.Linear(14, 10)
+        # self.fc2 = nn.Linear(10, 5)
+        # self.fc3 = nn.Linear(5, 1)
+        self.act_fuc = nn.Sigmoid()
+        self.fc1 = nn.Linear(13, 5)
+        self.fc2 = nn.Linear(5, 1)
+
+
+
+    def forward(self, x):
+        y = self.fc1(x)
+        y = self.act_fuc(y)
+        y = self.fc2(y)
+        # y = self.act_fuc(y)
+        # y = self.fc3(y)
+        return y
