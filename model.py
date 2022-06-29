@@ -8,7 +8,7 @@ Argument
 - 
 """
 class LSTM(nn.Module):
-    def __init__(self, size, hidden_size, num_layers, stack, dropout):
+    def __init__(self, size, hidden_size, num_layers, stack, dropout=0):
         super(LSTM, self).__init__()
         self.size = size
         self.hidden_size = hidden_size
@@ -16,7 +16,7 @@ class LSTM(nn.Module):
         self.stack = stack
         self.dropout = dropout
         self.module = nn.ModuleList([nn.LSTM(input_size=self.size, hidden_size=self.hidden_size,
-                                             num_layers=self.num_layers[i], batch_first=True, dropout=self.dropout) for i in range(self.stack)])
+                                             num_layers=self.num_layers[i], batch_first=True) for i in range(self.stack)])
         self.fc = nn.Linear(in_features=self.size, out_features=1)
 
     def forward(self, x):
@@ -48,7 +48,7 @@ class LSTM(nn.Module):
         return y
 
 class GRU(nn.Module):
-    def __init__(self, size, hidden_size, num_layers, stack, dropout):
+    def __init__(self, size, hidden_size, num_layers, stack, dropout=0):
         super(GRU, self).__init__()
         self.size = size
         self.hidden_size = hidden_size
@@ -56,7 +56,7 @@ class GRU(nn.Module):
         self.stack = stack
         self.dropout = dropout
         self.module = nn.ModuleList([nn.GRU(input_size=self.size, hidden_size=self.hidden_size,
-                                             num_layers=self.num_layers[i], batch_first=True, dropout=self.dropout) for i in range(self.stack)])
+                                             num_layers=self.num_layers[i], batch_first=True) for i in range(self.stack)])
         self.fc = nn.Linear(in_features=self.size, out_features=1)
 
     def forward(self, x):
