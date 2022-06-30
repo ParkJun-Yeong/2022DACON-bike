@@ -43,37 +43,44 @@ if __name__ == "__main__":
 
     # 시간에 따른 데이터 양상
     from matplotlib.dates import MonthLocator, DateFormatter
+    
+    try:
+        train['year']
+    except:
+        # date 분리 in train (분리 안된 파일이라면)
+        train = r_train
+        train['date'] = pd.to_datetime(train['date'])
+        train['year'] = r_train['date'].dt.year
+        train['month'] = r_train['date'].dt.month
+        train['day'] = r_train['date'].dt.day
+        train = train.drop(['date'], axis=1)
 
-    # date 분리 in train
-    train = r_train
-    train['date'] = pd.to_datetime(train['date'])
-    train['year'] = r_train['date'].dt.year
-    train['month'] = r_train['date'].dt.month
-    train['day'] = r_train['date'].dt.day
-    train = train.drop(['date'], axis=1)
+    if train['sunshine_sum'].isnull().sum():       
+        # sunshine sum 결측치 처리 in train
+        nan_idx_ss = train['sunshine_sum'][train['sunshine_sum'].isnull()].index
+        print("sunshine sum nan indice: ", nan_idx_ss)
 
-    # sunshine sum 결측치 처리 in train
-    nan_idx_ss = train['sunshine_sum'][train['sunshine_sum'].isnull()].index
-    print("sunshine sum nan indice: ", nan_idx_ss)
+        tgt_ss = train['sunshine_sum'].dropna().values.reshape(-1, 1)
+        x_sr = train['sunshine_rate'].drop(nan_idx_ss).values.reshape(-1, 1)
 
-    tgt_ss = train['sunshine_sum'].dropna().values.reshape(-1, 1)
-    x_sr = train['sunshine_rate'].drop(nan_idx_ss).values.reshape(-1, 1)
+        # LR 학습
+        lreg_ss = LinearRegression()
+        lreg_ss.fit(x_sr, tgt_ss)
 
-    # LR 학습
-    lreg_ss = LinearRegression()
-    lreg_ss.fit(x_sr, tgt_ss)
-
-    pred_ss = lreg_ss.predict(train['sunshine_rate'].loc[nan_idx_ss].values.reshape(-1, 1))
-    pred_ss = list(pred_ss)
-    print(pred_ss)
+        pred_ss = lreg_ss.predict(train['sunshine_rate'].loc[nan_idx_ss].values.reshape(-1, 1))
+        pred_ss = list(pred_ss)
+        print(pred_ss)
+        
+        for nan, pred in zip(nan_idx_ss, pred_ss):
+        train["sunshine_sum"].iloc[nan] = pred
 
     # PM10, PM2.5, sunshine_sum 결측치 채우기 in train
 
-    train["PM10"] = train["PM10"].fillna(train["PM10"].mean())
-    train["PM2.5"] = train["PM2.5"].fillna(train["PM2.5"].mean())
+    if train['PM10'].isnull().sum():       
+        train["PM10"] = train["PM10"].fillna(train["PM10"].mean())
+        train["PM2.5"] = train["PM2.5"].fillna(train["PM2.5"].mean())
 
-    for nan, pred in zip(nan_idx_ss, pred_ss):
-        train["sunshine_sum"].iloc[nan] = pred
+    
 
     # precipitation(강수량) 결측치 채우기 in train
     nan_idx_pp = train['precipitation'][train['precipitation'].isnull()].index
